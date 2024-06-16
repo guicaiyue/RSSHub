@@ -3,7 +3,7 @@ name: PR - Docker build test
 on:
   pull_request:
     branches:
-      - master
+      - xrz
     paths:
       - '.github/workflows/docker-test.yml'
       - 'lib/**'
