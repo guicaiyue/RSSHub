@@ -90,6 +90,8 @@ export type Data = {
     ttl?: number;
 };
 
+type Language = 'en' | 'de' | 'ja' | 'zh-CN' | 'zh-TW' | 'zh-HK' | 'pt' | 'fr' | 'ar-DZ' | 'ar-SA' | 'ar-MA' | 'ar-IQ' | 'ar-KW' | 'ar-TN' | 'fi' | 'it' | 'ru' | 'es' | 'ko' | 'tr' | 'ne' | 'other';
+
 // namespace
 interface NamespaceItem {
     /**
@@ -112,6 +114,11 @@ interface NamespaceItem {
      * Hints and additional explanations for users using this namespace, it will be inserted into the documentation
      */
     description?: string;
+
+    /**
+     * Main Language of the namespace
+     */
+    lang?: Language;
 }
 
 interface Namespace extends NamespaceItem {
@@ -124,6 +131,15 @@ interface Namespace extends NamespaceItem {
 }
 
 export type { Namespace };
+
+export enum ViewType {
+    Articles = 0,
+    SocialMedia = 1,
+    Pictures = 2,
+    Videos = 3,
+    Audios = 4,
+    Notifications = 5,
+}
 
 // route
 interface RouteItem {
@@ -223,6 +239,11 @@ interface RouteItem {
      * The [RSSHub-Radar](https://github.com/DIYgod/RSSHub-Radar) rule of the route
      */
     radar?: RadarItem[];
+
+    /**
+     * The [Follow](https://github.com/RSSNext/follow) default view of the route, default to `ViewType.Articles`
+     */
+    view?: ViewType;
 }
 
 interface Route extends RouteItem {
@@ -271,4 +292,10 @@ export type RadarItem = {
               /** @deprecated Temporary removed  @see https://github.com/DIYgod/RSSHub-Radar/commit/e6079ea1a8c96e89b1b2c2aa6d13c7967788ca3b */
               document: Document
           ) => string);
+};
+
+export type RadarDomain = {
+    _name: string;
+} & {
+    [subdomain: string]: RadarItem[];
 };
