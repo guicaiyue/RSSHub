@@ -1,0 +1,50 @@
+name: Sync Fork with Upstream
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * *"   # UTC 03:30 = Beijing 11:30
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-fork-xrz
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          ref: xrz
+          fetch-depth: 0
+
+      - name: Sync upstream/master and preserve this workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git remote add upstream https://github.com/DIYgod/RSSHub.git
+          git fetch upstream master --tags
+          UPSTREAM_SHA="$(git rev-parse upstream/master)"
+          CURRENT_SHA="$(git rev-parse HEAD)"
+          echo "Current HEAD:  ${CURRENT_SHA}"
+          echo "Upstream HEAD: ${UPSTREAM_SHA}"
+
+          if git merge-base --is-ancestor "${UPSTREAM_SHA}" HEAD && [ -f .github/workflows/sync-fork.yml ]; then
+            echo "Already synced: current branch contains upstream/master and workflow file exists."
+            exit 0
+          fi
+
+          cp .github/workflows/sync-fork.yml /tmp/sync-fork.yml
+          git reset --hard "${UPSTREAM_SHA}"
+          mkdir -p .github/workflows
+          cp /tmp/sync-fork.yml .github/workflows/sync-fork.yml
+          git add .github/workflows/sync-fork.yml
+          git commit -m "chore: sync upstream and preserve workflow"
+          git push --force-with-lease origin HEAD:xrz
