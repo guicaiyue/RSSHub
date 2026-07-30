@@ -6,13 +6,15 @@ import playwright from '@/utils/playwright';
 
 export const route: Route = {
     path: '/',
+    categories: ['other'],
+    example: '/uraaka-joshi',
     radar: [
         {
             source: ['uraaka-joshi.com/'],
             target: '',
         },
     ],
-    name: 'Unknown',
+    name: 'Homepage',
     maintainers: ['SettingDust', 'Halcao'],
     handler,
     url: 'uraaka-joshi.com/',
@@ -25,15 +27,19 @@ async function handler() {
     const link = 'https://www.uraaka-joshi.com/';
     const title = '裏垢女子まとめ';
 
-    const browser = await playwright();
+    const context = await playwright();
 
-    const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on('request', (request) => {
-        request.resourceType() === 'document' || request.resourceType() === 'script' || request.resourceType() === 'fetch' ? request.continue() : request.abort();
+    const page = await context.newPage();
+    await page.route('**/*', (route) => {
+        const request = route.request();
+        request.resourceType() === 'document' || request.resourceType() === 'script' || request.resourceType() === 'fetch' ? route.continue() : route.abort();
     });
     page.on('requestfinished', async (request) => {
-        if (request.url() === link && request.response().status() === 403) {
+        if (request.url() !== link) {
+            return;
+        }
+        const response = await request.response();
+        if (response?.status() === 403) {
             await page.close();
         }
     });
@@ -49,11 +55,11 @@ async function handler() {
         await page.waitForSelector('#main-block .grid-cell');
 
         const bodyHandle = await page.$('body');
-        html = await page.evaluate((body) => body.innerHTML, bodyHandle);
+        html = await page.evaluate((body) => body.getHTML(), bodyHandle);
     } catch {
         throw new Error('Access denied (403)');
     }
-    await browser.close();
+    await context.close();
 
     const $ = load(html);
     const list = $('.grid-cell');

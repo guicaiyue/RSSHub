@@ -11,7 +11,7 @@ import { parseDate } from '@/utils/parse-date';
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { category } = ctx.req.param();
-    const limit: number = Number.parseInt(ctx.req.query('limit') ?? '30', 10);
+    const limit = Number(ctx.req.query('limit') ?? '30');
 
     const baseUrl = 'https://bullionvault.com';
     const targetUrl: string = new URL(`gold-news${category ? `/${category}` : ''}`, baseUrl).href;
@@ -66,7 +66,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                     const $$: CheerioAPI = load(detailResponse);
 
                     const title: string = $$('article.article h1').text();
-                    const description: string | undefined = $$('div.content').html() ?? '';
+                    const description = $$('div.content').html();
                     const pubDateStr: string | undefined = $$('div.submitted').text().split(/,/).pop();
                     const categories: string[] = $$('meta[name="news_keywords"]').attr('content')?.split(/,/) ?? [];
                     const authorEls: Element[] = $$('div.view-author-bio').toArray();

@@ -12,7 +12,7 @@ import timezone from '@/utils/timezone';
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { category = 'association-news' } = ctx.req.param();
-    const limit: number = Number.parseInt(ctx.req.query('limit') ?? '10', 10);
+    const limit = Number(ctx.req.query('limit') ?? '10');
 
     const baseUrl = 'http://www.ccagm.org.cn';
     const targetUrl: string = new URL(category, baseUrl).href;
@@ -34,9 +34,9 @@ export const handler = async (ctx: Context): Promise<Data> => {
 
             const processedItem: DataItem = {
                 title,
-                pubDate: pubDateStr ? timezone(parseDate(pubDateStr), +8) : undefined,
+                pubDate: pubDateStr ? timezone(parseDate(pubDateStr), 8) : undefined,
                 link: linkUrl,
-                updated: upDatedStr ? timezone(parseDate(upDatedStr), +8) : undefined,
+                updated: upDatedStr ? timezone(parseDate(upDatedStr), 8) : undefined,
                 language,
             };
 
@@ -54,19 +54,19 @@ export const handler = async (ctx: Context): Promise<Data> => {
                 const $$: CheerioAPI = load(detailResponse);
 
                 const title: string = $$('h2.center').text();
-                const description: string | undefined = $$('div.newsview').html() ?? undefined;
+                const description = $$('div.newsview').html();
                 const pubDateStr: string | undefined = $$('p.title_s').text().trim().split(/：/).pop();
                 const upDatedStr: string | undefined = pubDateStr;
 
                 const processedItem: DataItem = {
                     title,
                     description,
-                    pubDate: pubDateStr ? timezone(parseDate(pubDateStr), +8) : item.pubDate,
+                    pubDate: pubDateStr ? timezone(parseDate(pubDateStr), 8) : item.pubDate,
                     content: {
                         html: description,
                         text: description,
                     },
-                    updated: upDatedStr ? timezone(parseDate(upDatedStr), +8) : item.updated,
+                    updated: upDatedStr ? timezone(parseDate(upDatedStr), 8) : item.updated,
                     language,
                 };
 

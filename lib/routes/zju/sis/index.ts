@@ -87,9 +87,7 @@ async function enrichNewsItemWithDetails(item: DataItem, refererUrl: string): Pr
 
             // Extract and set the full article content as description
             const description = $('.wp_articlecontent').html();
-            if (description) {
-                item.description = description;
-            }
+            item.description = description;
 
             // Extract and clean the author information
             let author = $('.arti_metas').find('.arti_publisher').text();
@@ -141,7 +139,7 @@ async function handleSisRequest(ctx: { req: { param: (arg0: string) => string } 
 
     // Validate the requested category type
     if (!categoryInfo) {
-        const validTypes = [...categoryMap.keys()].join(', ');
+        const validTypes = categoryMap.keys().toArray().join(', ');
         throw new Error(`Invalid type: ${requestedType}. Valid types are: ${validTypes}`);
     }
 

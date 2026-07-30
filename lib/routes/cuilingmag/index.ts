@@ -9,7 +9,7 @@ import { renderDescription } from './templates/description';
 
 export const handler = async (ctx) => {
     const { category } = ctx.req.param();
-    const limit = ctx.req.query('limit') ? Number.parseInt(ctx.req.query('limit'), 10) : 12;
+    const limit = ctx.req.query('limit') ? Number(ctx.req.query('limit')) : 12;
 
     const rootUrl = 'https://www.cuilingmag.com';
     const currentUrl = new URL(category ? `category/${category}` : '', rootUrl).href;
@@ -26,7 +26,7 @@ export const handler = async (ctx) => {
         .map((item) => {
             item = $(item);
 
-            const title = item.find('h3.new-list-h3, h3.title-font').first().text().trim();
+            const title = item.find('h3.new-list-h3, h3.title-font').text().trim();
 
             const src = item.find('img').first().prop('src');
             const image = src ? new URL(src, rootUrl).href : undefined;

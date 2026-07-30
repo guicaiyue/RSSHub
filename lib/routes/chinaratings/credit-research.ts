@@ -11,7 +11,7 @@ import { parseDate } from '@/utils/parse-date';
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { category = 'Industry/Comment' } = ctx.req.param();
-    const limit: number = Number.parseInt(ctx.req.query('limit') ?? '15', 10);
+    const limit = Number(ctx.req.query('limit') ?? '15');
 
     const baseUrl = 'https://www.chinaratings.com.cn';
     const targetUrl: string = new URL(`CreditResearch/${category.endsWith('/') ? category : `${category}/`}`, baseUrl).href;
@@ -55,7 +55,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                     const $$: CheerioAPI = load(detailResponse);
 
                     const title: string = $$('div.newshead h2, div.title h3').text();
-                    const description: string = $$('div.news div.content').html() ?? '';
+                    const description = $$('div.news div.content').html();
 
                     const metaStr: string = $$('div.newshead p span, div.title p span').text();
                     const pubDateStr: string | undefined = metaStr?.match(/(\d{4}-\d{2}-\d{2})/)?.[1];

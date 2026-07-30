@@ -12,7 +12,7 @@ import timezone from '@/utils/timezone';
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { filter } = ctx.req.param();
-    const limit: number = Number.parseInt(ctx.req.query('limit') ?? '30', 10);
+    const limit = Number(ctx.req.query('limit') ?? '30');
 
     const baseUrl = 'https://diariofruticola.cl';
     const targetUrl: string = new URL(`filtro/${filter}`, baseUrl).href;
@@ -51,7 +51,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                     const $$: CheerioAPI = load(detailResponse);
 
                     const title: string = $$('h1.my-2').text();
-                    const description: string | undefined = $$('div.ck-content').html() ?? '';
+                    const description = $$('div.ck-content').html();
                     const pubDateStr: string | undefined = detailResponse.match(/"datePublished":\s"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"/)?.[1] ?? undefined;
                     const upDatedStr: string | undefined = detailResponse.match(/"dateModified":\s"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})"/)?.[1] ?? undefined;
 

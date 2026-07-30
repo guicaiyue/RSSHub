@@ -11,7 +11,7 @@ import { parseDate } from '@/utils/parse-date';
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { category = 'daily-news' } = ctx.req.param();
-    const limit: number = Number.parseInt(ctx.req.query('limit') ?? '30', 10);
+    const limit = Number(ctx.req.query('limit') ?? '30');
 
     const baseUrl = 'https://www.expats.cz';
     const targetUrl: string = new URL(`czech-news/${category}`, baseUrl).href;
@@ -48,7 +48,7 @@ export const handler = async (ctx: Context): Promise<Data> => {
                 $$('div.promo-widget, div.eas').remove();
 
                 const title: string = $$('div.title h1').text();
-                const description: string | undefined = $$('div#expats-article-content').html() ?? undefined;
+                const description = $$('div#expats-article-content').html();
                 const pubDateStr: string | undefined = $$('meta[property="article:published_time"]').attr('content');
                 const categories: string[] = [$$('meta[property="article:section"]').attr('content') ?? ''];
                 const authorEls: Element[] = $$('span.written-by a').toArray();

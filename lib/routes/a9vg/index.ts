@@ -10,7 +10,7 @@ import { renderDescription } from './templates/description';
 
 export const handler = async (ctx) => {
     const { category = 'news/All' } = ctx.req.param();
-    const limit = ctx.req.query('limit') ? Number.parseInt(ctx.req.query('limit'), 10) : 15;
+    const limit = ctx.req.query('limit') ? Number(ctx.req.query('limit')) : 15;
 
     const rootUrl = 'http://www.a9vg.com';
     const currentUrl = new URL(`list/${category}`, rootUrl).href;
@@ -43,7 +43,7 @@ export const handler = async (ctx) => {
                           ]
                         : undefined,
                 }),
-                pubDate: timezone(parseDate(item.find('div.a9-rich-card-list_infos').text()), +8),
+                pubDate: timezone(parseDate(item.find('div.a9-rich-card-list_infos').text()), 8),
                 language,
             };
         });
@@ -72,7 +72,7 @@ export const handler = async (ctx) => {
                     );
                 });
 
-                item.title = $$('h1.ts, div.c-article-main_content-title').first().text();
+                item.title = $$('h1.ts, div.c-article-main_content-title').text();
                 item.description = renderDescription({
                     description: $$('td.t_f, div.c-article-main_contentraw').first().html(),
                 });
@@ -91,11 +91,10 @@ export const handler = async (ctx) => {
                         $$('div.authi em')
                             .first()
                             .text()
-                            .trim()
                             .match(/发表于 (\d+-\d+-\d+ \d+:\d+)/)?.[1] ?? $$('span.c-article-main_content-intro-item').first().text(),
                         ['YYYY-M-D HH:mm', 'YYYY-MM-DD HH:mm']
                     ),
-                    +8
+                    8
                 );
                 item.language = language;
 

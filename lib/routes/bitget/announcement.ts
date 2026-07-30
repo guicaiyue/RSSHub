@@ -96,11 +96,8 @@ const handler: Route['handler'] = async (ctx) => {
                         link: item.openUrl ?? '',
                         pubDate: item.sendTime ? date : undefined,
                         description: item.content ?? '',
+                        image: item.imgUrl,
                     };
-
-                    if (item.imgUrl) {
-                        dataItem.image = item.imgUrl;
-                    }
 
                     if (item.stationLetterType === '01' || item.stationLetterType === '06') {
                         try {
@@ -111,7 +108,7 @@ const handler: Route['handler'] = async (ctx) => {
                             const nextData = JSON.parse($('script#__NEXT_DATA__').text());
                             dataItem.description = nextData.props.pageProps.details?.content || nextData.props.pageProps.pageInitInfo?.ruleContent || item.content || '';
                         } catch (error: any) {
-                            if (error.name && (error.name === 'HTTPError' || error.name === 'RequestError' || error.name === 'FetchError')) {
+                            if (error.name && ['HTTPError', 'RequestError', 'FetchError'].includes(error.name)) {
                                 dataItem.description = item.content ?? '';
                             } else {
                                 throw error;

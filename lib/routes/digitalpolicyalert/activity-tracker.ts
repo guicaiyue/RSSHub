@@ -16,7 +16,7 @@ const createSearchParams = (queryString: string, limit: number = 30): URLSearchP
 
 const searchParamsToObject = (searchParams: URLSearchParams): Record<string, string> => {
     const obj: Record<string, string> = {};
-    for (const [key, value] of searchParams.entries()) {
+    for (const [key, value] of searchParams) {
         obj[key] = value;
     }
     return obj;
@@ -24,7 +24,7 @@ const searchParamsToObject = (searchParams: URLSearchParams): Record<string, str
 
 export const handler = async (ctx: Context): Promise<Data> => {
     const { filters } = ctx.req.param();
-    const limit: number = Number.parseInt(ctx.req.query('limit') ?? '30', 10);
+    const limit = Number(ctx.req.query('limit') ?? '30');
     const params: URLSearchParams = createSearchParams(filters, limit);
 
     const baseUrl = 'https://digitalpolicyalert.org';
@@ -46,9 +46,9 @@ export const handler = async (ctx: Context): Promise<Data> => {
     const $: CheerioAPI = load(targetResponse);
     const language = $('html').attr('lang') ?? 'en';
 
-    const items: DataItem[] = (response.results ?? []).slice(0, limit).map((item): DataItem => {
+    const items: DataItem[] = response.results.slice(0, limit).map((item): DataItem => {
         const title: string = item.title;
-        const description: string | undefined = item.latest_event?.description ?? undefined;
+        const description: string | undefined = item.latest_event?.description;
         const pubDate: number | string = item.latest_event?.date;
         const linkUrl: string | undefined = item.slug ? `change/${item.slug}` : undefined;
         const categories: string[] = [
@@ -60,12 +60,11 @@ export const handler = async (ctx: Context): Promise<Data> => {
                 item.type?.name,
             ]),
         ].filter(Boolean);
-        const authors: DataItem['author'] =
-            item.implementers?.map((author) => ({
-                name: author.name,
-                url: undefined,
-                avatar: undefined,
-            })) ?? undefined;
+        const authors: DataItem['author'] = item.implementers?.map((author) => ({
+            name: author.name,
+            url: undefined,
+            avatar: undefined,
+        }));
         const updated: number | string = pubDate;
 
         const processedItem: DataItem = {

@@ -23,7 +23,7 @@ export const route: Route = {
     },
     radar: [
         {
-            source: ['www.perplexity.ai/hub'],
+            source: ['www.perplexity.ai/hub/blog'],
             target: '/blog',
         },
     ],
@@ -35,19 +35,19 @@ export const route: Route = {
 };
 
 async function handler(ctx: Context) {
-    const limit = Number.parseInt(ctx.req.query('limit') ?? '20', 10);
-    const rootUrl = 'https://www.perplexity.ai/hub';
+    const limit = Number(ctx.req.query('limit') ?? '20');
+    const rootUrl = 'https://www.perplexity.ai/hub/blog';
 
-    const { page, destroy, browser } = await getPlaywrightPage(rootUrl, {
+    const { page, destroy, context } = await getPlaywrightPage(rootUrl, {
         onBeforeLoad: async (page) => {
-            await page.setRequestInterception(true);
-            page.on('request', (request) => {
-                request.resourceType() === 'document' ? request.continue() : request.abort();
+            await page.route('**/*', (route) => {
+                const request = route.request();
+                request.resourceType() === 'document' ? route.continue() : route.abort();
             });
         },
     });
 
-    const html = await page.evaluate(() => document.documentElement.innerHTML);
+    const html = await page.evaluate(() => document.documentElement.getHTML());
     const $ = load(html);
 
     const items: DataItem[] = [];
@@ -56,7 +56,7 @@ async function handler(ctx: Context) {
 
     // Step 1: Extract featured article using data-framer-name attribute
     const featuredCard = $('[data-framer-name="Featured Card"]').first();
-    const featuredHref = featuredCard.find('a[href^="./hub/blog/"]').first().attr('href');
+    const featuredHref = featuredCard.find('a[href^="./blog/"]').attr('href');
     const featuredTitle = featuredCard.find('h4').first().text().trim();
 
     if (featuredHref && featuredTitle) {
@@ -112,18 +112,18 @@ async function handler(ctx: Context) {
             }
 
             return (await cache.tryGet(item.link, async () => {
-                const contentPage = await browser.newPage();
+                const contentPage = await context.newPage();
 
-                await contentPage.setRequestInterception(true);
-                contentPage.on('request', (request) => {
-                    request.resourceType() === 'document' ? request.continue() : request.abort();
+                await contentPage.route('**/*', (route) => {
+                    const request = route.request();
+                    request.resourceType() === 'document' ? route.continue() : route.abort();
                 });
 
                 await contentPage.goto(item.link!, {
                     waitUntil: 'domcontentloaded',
                 });
 
-                const contentHtml = await contentPage.evaluate(() => document.documentElement.innerHTML);
+                const contentHtml = await contentPage.evaluate(() => document.documentElement.getHTML());
                 await contentPage.close();
 
                 const $content = load(contentHtml);
@@ -136,10 +136,10 @@ async function handler(ctx: Context) {
                     }
                 }
 
-                $content('script, style, noscript').remove();
+                $content('style, noscript').remove();
 
                 const contentArea = $content('[data-framer-name="Content"]').first();
-                const description = contentArea.length ? (contentArea.html() ?? undefined) : undefined;
+                const description = contentArea.length ? contentArea.html() : undefined;
 
                 return {
                     ...item,

@@ -10,7 +10,7 @@ import { renderDescription } from './templates/description';
 
 export const handler = async (ctx) => {
     const { id = '0' } = ctx.req.param();
-    const limit = ctx.req.query('limit') ? Number.parseInt(ctx.req.query('limit'), 10) : 20;
+    const limit = ctx.req.query('limit') ? Number(ctx.req.query('limit')) : 20;
 
     const rootUrl = 'https://fashionnetwork.cn';
     const currentUrl = new URL(`lists/${id}`, rootUrl).href;
@@ -29,7 +29,7 @@ export const handler = async (ctx) => {
 
             const title = item.find('h2.family-title').text();
 
-            const src = item.find('img.item__img').first().prop('src') ?? undefined;
+            const src = item.find('img.item__img').prop('src') ?? undefined;
             const image = src ? new URL(src, rootUrl).href : undefined;
 
             const description = renderDescription({
@@ -70,9 +70,8 @@ export const handler = async (ctx) => {
 
                 item.title = title;
                 item.description = description;
-                item.pubDate = timezone(parseDate($$('span.time-ago').first().text().trim()), +8);
+                item.pubDate = timezone(parseDate($$('span.time-ago').first().text().trim()), 8);
                 item.category = $$('div.newsTags')
-                    .first()
                     .find('div.news-tag')
                     .toArray()
                     .map((c) => $$(c).text());
@@ -88,7 +87,7 @@ export const handler = async (ctx) => {
         )
     );
 
-    const label = $(`label[for="news_categs_${id}"]`).text()?.split(/\(/)?.[0]?.trim() ?? '';
+    const label = $(`label[for="news_categs_${id}"]`).text()?.split(/\(/, 1)?.[0]?.trim() ?? '';
     const image = new URL($('div.header__fnw-logo img').prop('src'), rootUrl).href;
 
     return {
